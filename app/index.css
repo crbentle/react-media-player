@@ -9,12 +9,12 @@ body {
   font-family: -applet-system
     ,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans
     ,Ubuntu,Cantarell,Helvetica Neue,sans-serif;
-  #background-color: #1799ce;
-  background: #1799ce; /* For browsers that do not support gradients */
-  background: -webkit-linear-gradient(left top, #1799ce, #117777); /* For Safari 5.1 to 6.0 */
-  background: -o-linear-gradient(bottom right,  #1799ce, #117777); /* For Opera 11.1 to 12.0 */
-  background: -moz-linear-gradient(bottom right,  #1799ce, #117777); /* For Firefox 3.6 to 15 */
-  background: linear-gradient(to bottom right,  #1799ce, #3377cc); /* Standard syntax */
+  #background-color: #1c69ca;
+  background: #1c69ca; /* For browsers that do not support gradients */
+  background: -webkit-linear-gradient(left top, #1c69ca, #122255); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(bottom right,  #1c69ca, #122255); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(bottom right,  #1c69ca, #122255); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(to bottom right,  #1c69ca, #122255); /* Standard syntax */
 }
 
 ul {
@@ -42,7 +42,7 @@ a {
   width: 400px;
   border: 2px gray solid;
   border-radius: 10px;
-  max-height: 200px;
+  max-height: 400px;
   overflow: auto;
   margin-top: 10px;
 }
@@ -68,27 +68,33 @@ a {
 .playlist::-webkit-scrollbar-thumb
 {
 	border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
   background-image: -webkit-gradient(linear,
 									   left bottom,
 									   left top,
-									   color-stop(0.44, rgb(122,153,217)),
-									   color-stop(0.72, rgb(73,125,189)),
-									   color-stop(0.86, rgb(28,58,148)));
+									   color-stop(0.15, rgb(122,153,217)),
+									   color-stop(0.30, rgb(73,125,189)),
+									   color-stop(.75, rgb(28,58,175)));
 }
 
 .playlist li {
   cursor: pointer;
-  padding-left: 25px;
+  /*padding-left: 25px;*/
+  /*padding: 2px 25px;
+  border: thin gray solid;    */
+  padding: 2px 25px;
+  border: thin rgba(210, 210, 210, 0.19) solid;
+  margin: -1px 0px -1px -1px;
 }
 
 .playlist li.active {
-  background-color: #236294;
-  color: #white;
-  border-radius: 8px;
+  background-color: #1c69ca;
+  color: white;
+  /*border-radius: 8px;*/
 }
 
 .player {
-  background-color: blue;
+  background-color: #1034a7;
   height: 50px;
   text-align: center;
   color: white;
@@ -96,7 +102,33 @@ a {
   font-weight: bold;
 }
 
-.progress {
+.player-content {
+  vertical-align: middle;
+  line-height: 50px;
+}
+
+.control, .volume-control {
+  display: inline;
+  margin: 15px;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.control:active {
+  position: relative;
+  top: 1px;
+}
+.control:hover, .volume-control:hover {
+  color: #bbcbe0;
+}
+
+.volume-control {
+  position: absolute;
+  right: 50px;
+  margin: 0;
+}
+
+.player-progress {
   cursor: pointer;
     height: 10px;
     padding-top: 5px;
@@ -105,7 +137,7 @@ a {
 }
 
 .progress-played, .progress-remaining {
-  height: 3px;
+  height: 2px;
 }
 .progress-played {
   #border: 1px #eeeeee solid;
@@ -117,6 +149,39 @@ a {
   #border: 1px #aaaaaa solid;
   background-color: #aaaaaa;
   width: 100%;
+}
+
+.progress-slider {
+    position: relative;
+    top: -10px;
+    color: white;
+    margin-right: -1px;
+    float: right;
+}
+
+.progress-slider-disc {
+  background-color: white;
+  width: 12px;
+  height: 12px;
+  display: inline;
+  float: right;
+  border-radius: 50%;
+  margin-top: -5px;
+}
+
+.progress-slider-disc li {
+  list-style-type: disc;
+  font-size: 30px;
+  float: right;
+  color: white;
+  padding: 0;
+  margin: 0;
+  margin-top: -36px;
+  margin-right: -26px;
+}
+
+.control-padding {
+  margin: 15px;
 }
 
 .container {
