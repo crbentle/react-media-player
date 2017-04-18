@@ -38,13 +38,15 @@ a {
 
 .playlist {
   margin: auto;
-  color: white;
+  color: black;
   width: 400px;
   border: 2px gray solid;
   border-radius: 10px;
   max-height: 400px;
   overflow: auto;
   margin-top: 10px;
+  background-color: floralwhite;
+  font-weight: bold;
 }
 
 /*
@@ -72,9 +74,9 @@ a {
   background-image: -webkit-gradient(linear,
 									   left bottom,
 									   left top,
-									   color-stop(0.15, rgb(122,153,217)),
-									   color-stop(0.30, rgb(73,125,189)),
-									   color-stop(.75, rgb(28,58,175)));
+									   color-stop(0.15, rgb(210,210,210)),
+									   color-stop(0.30, rgb(168,168,169)),
+									   color-stop(.75, rgb(193,194,197)));
 }
 
 .playlist li {
@@ -83,7 +85,7 @@ a {
   /*padding: 2px 25px;
   border: thin gray solid;    */
   padding: 2px 25px;
-  border: thin rgba(210, 210, 210, 0.19) solid;
+  /*border: thin rgba(210, 210, 210, 0.19) solid;*/
   margin: -1px 0px -1px -1px;
 }
 
