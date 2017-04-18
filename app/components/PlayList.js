@@ -27,23 +27,13 @@ class PlayList extends React.Component {
     }
     songClick(index) {
         this.setState({activeIndex: index})
+        this.props.handleClick(index);
     }
     render() {
         return (
-//           <div className='playlist'>
-//   <ListGroup>
-//        {this.props.songs.map(function(song, index) {
-//         const active = this.state.activeIndex === index ? true : false;
-//         return (
-//           <ListGroupItem key={song.title} onClick={this.songClick.bind(this, index)}>{song.title}</ListGroupItem>
-//
-//         )
-//       }, this)}
-//   </ListGroup>
-// </div>
             <ul className='playlist'>
               {this.props.songs.map(function(song, index) {
-                const active = this.state.activeIndex === index ? true : false;
+                const active = this.props.activeIndex === index ? true : false;
                 return (
                   <Song
                     key={song.title}

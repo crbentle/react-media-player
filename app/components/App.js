@@ -1,7 +1,5 @@
 var React = require('react');
 var PropTypes = require('prop-types');
-var songApi = require('../utils/songApi');
-const PlayList = require('./PlayList');
 const Player = require('./Player');
 
 class App extends React.Component {
@@ -9,7 +7,6 @@ class App extends React.Component {
         return (
             <div>
               <Player />
-              <PlayList songs={songApi.getSongList()} />
             </div>
         )
     }
