@@ -124,10 +124,17 @@ a {
   color: #bbcbe0;
 }
 
-.volume-control {
+.duration-control {
+  font-size: 12px;
+  padding-right: 25px;
+  float: left;
+  color: #bbbbbb
+}
+
+.durationVolumeControl {
   position: absolute;
   right: 50px;
-  margin: 0;
+  display: inline;
 }
 
 .player-progress {

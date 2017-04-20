@@ -7,13 +7,24 @@ var axios = require('axios');
 
 class Controller extends React.Component {
   render() {
+    var min, sec;
+    if( this.props.playtime != null ) {
+      var min = Math.floor(this.props.playtime.duration / 60);
+      var sec = Math.floor(this.props.playtime.duration % 60);
+      sec = sec < 10 ? "0"+sec : sec;
+    }
     return (
       <div className='player'>
         <div className='player-content'>
           <Control handleClick={this.props.handleClick.bind(null, 'previous')} icon='fast-backward'/>
           <Play isPlaying={this.props.isPlaying} handleClick={this.props.handleClick} icon='play'/>
           <Control handleClick={this.props.handleClick.bind(null, 'next')} icon='fast-forward'/>
-          <VolumeControl volume='40'/>
+          <div className='durationVolumeControl'>
+            { this.props.playtime != null &&
+            <div className="duration-control">{this.props.playtime.played + " | " + min+":"+sec}</div>
+          }
+            <VolumeControl volume='40'/>
+          </div>
         </div>
       </div>
     )
@@ -96,7 +107,8 @@ class Player extends React.Component {
       progress: 0,
       songList: songApi.getSongList(),
       currentSongIndex: -1,
-      isPlaying: false
+      isPlaying: false,
+      playTime: null
     }
 
     window.audioContext = new(window.AudioContext || window.webKitAudioContext)(); // Our audio context
@@ -217,15 +229,41 @@ class Player extends React.Component {
         source.buffer = audioBuffer; // set the buffer to play to our audio buffer
         source.connect(audioContext.destination); // connect the source to the output destinarion
         source.start(0); // tell the audio buffer to play from the beginning
+        var bufferDuration = source.buffer.duration;
+        audioContext.addEventListener("audioprocess", function() {
+          console.log("audioContext.audioprocess");
+        });
+        audioContext.addEventListener("timeupdate", function() {
+          console.log("audioContext.timeupdate");
+        });
+        source.addEventListener("audioprocess", function() {
+          console.log("source.audioprocess");
+        });
+        source.addEventListener("timeupdate", function() {
+        console.log("source.timeupdate");
+        });
 
+        window.addEventListener("audioprocess", function() {
+          console.log("window.audioprocess");
+        });
+        window.addEventListener("timeupdate", function() {
+        console.log("window.timeupdate");
+        });
+
+this.setState({
+  playtime: {
+    played: 0,
+    duration: bufferDuration
+  }
+})
         // Check for 'running' hear in case the context was previously suspended
         if( window.audioContext.state !='running' ) {
           window.audioContext.resume();
         }
         window.audioSource = source;
-      });
+      }.bind(this));
 
-    }).catch(function(error) {
+    }.bind(this)).catch(function(error) {
       console.log("Error: " + error);
 
       this.setState({
@@ -236,7 +274,9 @@ class Player extends React.Component {
   render() {
     return (
       <div>
-        <Controller isPlaying={this.state.isPlaying} handleClick={this.handleControlClick} />
+        <Controller isPlaying={this.state.isPlaying}
+          playtime={this.state.playtime}
+          handleClick={this.handleControlClick} />
         <ProgressBar progress={this.state.progress} handleClick={this.handleProgressClick} />
         <PlayList handleClick={this.handleSongClick} songs={this.state.songList} activeIndex={this.state.currentSongIndex} />
       </div>
