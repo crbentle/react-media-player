@@ -109,11 +109,38 @@ a {
   line-height: 50px;
 }
 
-.control, .volume-control {
+.control {
   display: inline;
   margin: 15px;
   cursor: pointer;
   font-size: 20px;
+}
+
+.volume-range {
+  display: none;
+  width: 100px;
+  bottom: 15px;
+  right: 55px;
+  position: absolute;
+}
+
+.volume-range-slider {
+  cursor: pointer;
+}
+
+.volume-control:hover .volume-range {
+  display: block;
+}
+
+.volume-control:hover {
+  padding-left: 140px;
+}
+
+.volume-control {
+  padding-left: 40px;
+  display: inline;
+  margin-right: 15px;
+  cursor: pointer;
 }
 
 .control:active {
@@ -126,7 +153,6 @@ a {
 
 .duration-control {
   font-size: 12px;
-  padding-right: 25px;
   float: left;
   color: #bbbbbb
 }

@@ -6,13 +6,14 @@ var Glyphicon = require('react-bootstrap').Glyphicon;
 var axios = require('axios');
 
 class Controller extends React.Component {
+
+  formatTime(seconds) {
+    var min = Math.floor(seconds / 60);
+    var sec = Math.floor(seconds % 60);
+    sec = sec < 10 ? "0"+sec : sec;
+    return min + ":" + sec;
+  }
   render() {
-    var min, sec;
-    if( this.props.playtime != null ) {
-      var min = Math.floor(this.props.playtime.duration / 60);
-      var sec = Math.floor(this.props.playtime.duration % 60);
-      sec = sec < 10 ? "0"+sec : sec;
-    }
     return (
       <div className='player'>
         <div className='player-content'>
@@ -20,8 +21,8 @@ class Controller extends React.Component {
           <Play isPlaying={this.props.isPlaying} handleClick={this.props.handleClick} icon='play'/>
           <Control handleClick={this.props.handleClick.bind(null, 'next')} icon='fast-forward'/>
           <div className='durationVolumeControl'>
-            { this.props.playtime != null &&
-            <div className="duration-control">{this.props.playtime.played + " | " + min+":"+sec}</div>
+            { this.props.progress != null &&
+            <div className="duration-control">{this.formatTime(this.props.progress.played) + " | " + this.formatTime(this.props.progress.duration)}</div>
           }
             <VolumeControl volume='40'/>
           </div>
@@ -34,11 +35,17 @@ class Controller extends React.Component {
 class ProgressBar extends React.Component {
   render() {
       var style = {
-        width: this.props.progress + '%'
+        width: '0%'
       };
+      if( this.props.progress != null ) {
+        var percent = (this.props.progress.played / this.props.progress.duration) * 100;
+        style = {
+          width: percent + '%'
+        };
+      }
     return(
       <div onClick={this.props.handleClick} className='player-progress'>
-        <div style={style} className='progress-played'>
+        <div style={style != null ? style : null} className='progress-played'>
           <span className='progress-slider-disc'>
           </span>
         </div>
@@ -94,6 +101,10 @@ class VolumeControl extends React.Component {
     }
     return (
       <div onClick={this.handleClick} className='volume-control'>
+        <div className='volume-range'>
+          {/* <div className='volume-range-slider'>slider</div> */}
+          <input className='volume-range-slider' type='range' />
+        </div>
         <Glyphicon glyph={iconName}/>
       </div>
     )
@@ -104,21 +115,55 @@ class Player extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      progress: 0,
+      progress: null,
       songList: songApi.getSongList(),
       currentSongIndex: -1,
-      isPlaying: false,
-      playTime: null
+      isPlaying: false
     }
-
-    window.audioContext = new(window.AudioContext || window.webKitAudioContext)(); // Our audio context
-    window.audioSource = null;
 
     this.handleControlClick = this.handleControlClick.bind(this);
     this.handleSongClick = this.handleSongClick.bind(this);
     this.handleProgressClick = this.handleProgressClick.bind(this);
     this.playSong = this.playSong.bind(this);
+    // this.playNextSong = this.playNextSong.bind(this);
   }
+  componentDidMount() {
+    this.songStartTime = 0;
+    // Our audio context
+    this.audioContext = new(window.AudioContext || window.webKitAudioContext)();
+    this.audioSource = null;
+    this.audioBuffer = null;
+  }
+
+  // Create a new AudioBufferSourceNode
+    initAudioSource() {
+      this.audioSource = this.audioContext.createBufferSource();
+      this.audioSource.buffer = this.audioBuffer;
+      this.audioSource.connect(this.audioContext.destination);
+      // Bind the callback to this
+      this.audioSource.onended = this.playNextSong.bind(this);//endOfPlayback;
+    }
+
+    startProgressTimer() {
+      this.progressTimerID = window.setInterval(function() {
+        var progress = this.state.progress;
+        if (progress != null) {
+          // console.log("interval progress = " + JSON.stringify(progress));
+          progress['played'] = (this.audioContext.currentTime - this.songStartTime);
+          this.setState({
+            progress: progress
+          });
+        }
+      }.bind(this), 50);
+    }
+
+    stopProgressTimer() {
+      if( this.progressTimerID != null ) {
+        window.clearInterval( this.progressTimerID );
+        this.progressTimerID = null;
+      }
+    }
+
   handleControlClick(action) {
     switch (action) {
       case 'play': // fall through
@@ -172,23 +217,46 @@ class Player extends React.Component {
       ? false
       : true;
     if (play) {
-      if (window.audioContext != null && window.audioContext.state != 'running') {
-        window.audioContext.resume();
+      if (this.audioContext != null && this.audioContext.state != 'running') {
+        this.audioContext.resume();
+        this.startProgressTimer();
       } else {
         this.playCurrentSong();
       }
     } else {
-      if (window.audioContext != null) {
-        window.audioContext.suspend();
+      if (this.audioContext != null) {
+        this.audioContext.suspend();
+        this.stopProgressTimer();
       }
     }
 
-    this.setState({isPlaying: play});
+var progress = this.state.progress;
+progress['played'] = (this.audioContext.currentTime - this.songStartTime);
+    this.setState({
+      isPlaying: play,
+      progress: progress
+    });
   }
   handleProgressClick(event) {
     // var percent = Math.round((event.clientX / window.outerWidth) * 100);
-    var percent = (event.clientX / window.outerWidth) * 100;
-    this.setState({progress: percent})
+    var percent = (event.clientX / window.outerWidth);
+    if( this.state.progress != null ) {
+      var duration = this.state.progress.duration;
+      var played = duration * percent;
+      this.audioSource.stop(0);
+      this.audioSource.disconnect(this.audioContext.destination);
+      this.audioSource = null;
+      this.initAudioSource();
+      this.audioSource.start(0, played);
+      this.songStartTime = this.audioContext.currentTime - played;
+
+      this.setState( {
+        progress: {
+          played: played,
+          duration: duration
+        }
+      });
+    }
   }
 
   playSong(index) {
@@ -197,18 +265,12 @@ class Player extends React.Component {
       currentSongIndex: index,
       isPlaying: true
     });
-    var audioContext = window.audioContext;
-
-    // This is the BufferSource containing the buffered audio
-    var source = window.audioSource;
 
     // Clear any existing audio source that we might be using
-    if (source != null) {
-      source.disconnect(audioContext.destination);
+    if (this.audioSource != null) {
+      this.audioSource.disconnect(this.audioContext.destination);
       // Leave existing source to garbage collection
-      source = null;
-      // Update the window.audioSource in case the file load fails
-      window.audioSource = source;
+      this.audioSource = null;
     }
 
     //set the audio file's URL
@@ -219,63 +281,52 @@ class Player extends React.Component {
       //take the audio from http request and decode it in an audio buffer
 
       var audioBuffer = null;
-
-      audioContext.decodeAudioData(response.data, function(audioBuffer) {
+      this.audioContext.decodeAudioData(response.data, function(audioBuffer) {
 
         // In order to play the decoded samples contained in the audio buffer we need to wrap them in
         // an AudioBufferSourceNode object. This object will stream the audio samples to any other
         // AudioNode or AudioDestinationNode object.
-        source = audioContext.createBufferSource();
-        source.buffer = audioBuffer; // set the buffer to play to our audio buffer
-        source.connect(audioContext.destination); // connect the source to the output destinarion
-        source.start(0); // tell the audio buffer to play from the beginning
-        var bufferDuration = source.buffer.duration;
-        audioContext.addEventListener("audioprocess", function() {
-          console.log("audioContext.audioprocess");
-        });
-        audioContext.addEventListener("timeupdate", function() {
-          console.log("audioContext.timeupdate");
-        });
-        source.addEventListener("audioprocess", function() {
-          console.log("source.audioprocess");
-        });
-        source.addEventListener("timeupdate", function() {
-        console.log("source.timeupdate");
-        });
+        this.audioBuffer = audioBuffer;
+        this.initAudioSource();
+        // audioSource = audioContext.createBufferSource();
+        // source.buffer = audioBuffer; // set the buffer to play to our audio buffer
+        // source.connect(audioContext.destination); // connect the source to the output destinarion
+        this.audioSource.start(0); // tell the audio buffer to play from the beginning
+        this.startProgressTimer();
+        var bufferDuration = this.audioSource.buffer.duration;
 
-        window.addEventListener("audioprocess", function() {
-          console.log("window.audioprocess");
-        });
-        window.addEventListener("timeupdate", function() {
-        console.log("window.timeupdate");
-        });
+        this.songStartTime = this.audioContext.currentTime;
+
 
 this.setState({
-  playtime: {
+  progress: {
     played: 0,
     duration: bufferDuration
   }
 })
-        // Check for 'running' hear in case the context was previously suspended
-        if( window.audioContext.state !='running' ) {
-          window.audioContext.resume();
+        // Check for 'running' here in case the context was previously suspended
+        if( this.audioContext.state !='running' ) {
+          this.audioContext.resume();
         }
-        window.audioSource = source;
       }.bind(this));
 
     }.bind(this)).catch(function(error) {
-      console.log("Error: " + error);
 
       this.setState({
-        isPlaying: false
+        isPlaying: false,
+        progress: null
       });
+
+        console.log("Error: " + error);
+        this.stopProgressTimer();
+        this.playNextSong();
     }.bind(this));
   }
   render() {
     return (
       <div>
         <Controller isPlaying={this.state.isPlaying}
-          playtime={this.state.playtime}
+          progress={this.state.progress}
           handleClick={this.handleControlClick} />
         <ProgressBar progress={this.state.progress} handleClick={this.handleProgressClick} />
         <PlayList handleClick={this.handleSongClick} songs={this.state.songList} activeIndex={this.state.currentSongIndex} />
