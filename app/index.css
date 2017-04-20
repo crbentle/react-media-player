@@ -118,22 +118,30 @@ a {
 
 .volume-range {
   display: none;
-  width: 100px;
-  bottom: 15px;
-  right: 55px;
-  position: absolute;
+  padding-right: 25px;
+    transition: opacity 1s ease-out;
+    opacity: 0;
 }
 
 .volume-range-slider {
   cursor: pointer;
+  display: inline;
 }
 
-.volume-control:hover .volume-range {
-  display: block;
-}
+.volume-control:hover > .volume-range {
+  display: inline;
+  opacity: 1;
 
-.volume-control:hover {
-  padding-left: 140px;
+    animation: fade 1s;
+}
+@keyframes fade {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 .volume-control {
@@ -159,7 +167,7 @@ a {
 
 .durationVolumeControl {
   position: absolute;
-  right: 50px;
+  right: 25px;
   display: inline;
 }
 

@@ -100,12 +100,14 @@ class VolumeControl extends React.Component {
       iconName = 'volume-down';
     }
     return (
-      <div onClick={this.handleClick} className='volume-control'>
+      <div className='volume-control'>
         <div className='volume-range'>
           {/* <div className='volume-range-slider'>slider</div> */}
-          <input className='volume-range-slider' type='range' />
+          <input onChange={function(event){
+            console.log("e: " + event.target.value);
+          }} className='volume-range-slider' type='range' style={{"display": "inline", "width": "initial"}} />
         </div>
-        <Glyphicon glyph={iconName}/>
+        <Glyphicon onClick={this.handleClick} glyph={iconName}/>
       </div>
     )
   }
