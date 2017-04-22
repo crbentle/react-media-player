@@ -136,7 +136,12 @@ class Player extends React.Component {
   }
   handleProgressClick(event) {
     // var percent = Math.round((event.clientX / window.outerWidth) * 100);
-    var percent = (event.clientX / window.outerWidth);
+
+    var targetWidth = event.target.offsetWidth;
+    var offsetClick = event.nativeEvent.offsetX;
+    var percent = offsetClick / targetWidth;
+
+    // var percent = (event.clientX / window.outerWidth);
     if( this.state.progress != null ) {
       var duration = this.state.progress.duration;
       var played = duration * percent;
@@ -235,7 +240,7 @@ class Player extends React.Component {
   }
   render() {
     return (
-      <div>
+      <div className='player-wrapper'>
         <ControlPanel
           isPlaying={this.state.isPlaying}
           progress={this.state.progress}

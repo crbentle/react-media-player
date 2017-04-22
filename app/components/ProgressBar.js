@@ -12,13 +12,16 @@ function ProgressBar(props) {
       };
     }
     return(
-      <div onClick={props.handleClick} className='player-progress'>
-        <div style={style != null ? style : null} className='progress-played'>
-          <span className='progress-slider-disc'>
-          </span>
+      <div onClick={props.handleClick} className='progress-wrapper'>
+        <div className='player-progress'>
+          <div style={style != null ? style : null} className='progress-played'>
+            <span className='progress-slider-disc'>
+            </span>
+          </div>
+          <div className='progress-remaining'></div>
         </div>
-        <div className='progress-remaining'></div>
       </div>
+
     )
 }
 

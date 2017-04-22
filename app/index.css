@@ -1,20 +1,47 @@
+@media (max-width: 900px) {
+    body .player {
+        height: 4em;
+    }
+    body .player::after {
+        content: ' ';
+        display: block;
+        height: 2em;
+    }
+    body .durationVolumeControl {
+        right: 1em;
+        top: 1.5em;
+    }
+}
+
+@media (max-width: 399px) {
+  body .playlist{
+    width: 300px;
+  }
+}
+
 html, body {
   height: 100%;
+  margin:0;
 }
 
 body {
   min-height: 100%;
-  #height: 100vh;
-  margin: 0;
   font-family: -applet-system
     ,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans
     ,Ubuntu,Cantarell,Helvetica Neue,sans-serif;
+  font-size: 150%;
   #background-color: #1c69ca;
   background: #1c69ca; /* For browsers that do not support gradients */
   background: -webkit-linear-gradient(left top, #1c69ca, #122255); /* For Safari 5.1 to 6.0 */
   background: -o-linear-gradient(bottom right,  #1c69ca, #122255); /* For Opera 11.1 to 12.0 */
   background: -moz-linear-gradient(bottom right,  #1c69ca, #122255); /* For Firefox 3.6 to 15 */
   background: linear-gradient(to bottom right,  #1c69ca, #122255); /* Standard syntax */
+}
+
+.player-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-height: 100vh;
 }
 
 ul {
@@ -31,22 +58,22 @@ a {
 }
 
 #app {
-  #padding-top: 10px;
   display: flex;
   flex-direction: column;
+  max-height: 100%;
 }
 
 .playlist {
   margin: auto;
   color: black;
   width: 400px;
-  border: 2px gray solid;
+  border: .125em gray solid;
   border-radius: 10px;
-  max-height: 400px;
   overflow: auto;
-  margin-top: 10px;
+  margin-top: .625em;
   background-color: floralwhite;
   font-weight: bold;
+  flex: 1;
 }
 
 /*
@@ -57,12 +84,12 @@ a {
 {
 	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
 	background-color: #F5F5F5;
-	border-radius: 10px;
+	border-radius: .625em;
 }
 
 .playlist::-webkit-scrollbar
 {
-	width: 10px;
+	width: .625em;
 	background-color: #F5F5F5;
   border-radius: 10px;
 }
@@ -81,11 +108,7 @@ a {
 
 .playlist li {
   cursor: pointer;
-  /*padding-left: 25px;*/
-  /*padding: 2px 25px;
-  border: thin gray solid;    */
-  padding: 2px 25px;
-  /*border: thin rgba(210, 210, 210, 0.19) solid;*/
+  padding: .125em 1.563em;
   margin: -1px 0px -1px -1px;
 }
 
@@ -97,28 +120,28 @@ a {
 
 .player {
   background-color: #1034a7;
-  height: 50px;
+  height: 3.125em;
   text-align: center;
   color: white;
-  font-size: 22px;
+  font-size: 1.375em;
   font-weight: bold;
 }
 
 .player-content {
   vertical-align: middle;
-  line-height: 50px;
+  line-height: 3.125em;
 }
 
 .control {
   display: inline;
-  margin: 15px;
+  margin: 0.938em;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 1.250em;
 }
 
 .volume-range {
   display: none;
-  padding-right: 25px;
+  padding-right: 1.563em;
     transition: opacity 1s ease-out;
     opacity: 0;
 }
@@ -145,9 +168,9 @@ a {
 }
 
 .volume-control {
-  padding-left: 40px;
+  padding-left: 1.25em;
   display: inline;
-  margin-right: 15px;
+  margin-right: 0.938em;
   cursor: pointer;
 }
 
@@ -160,43 +183,45 @@ a {
 }
 
 .duration-control {
-  font-size: 12px;
+  font-size: 0.750em;
   float: left;
   color: #bbbbbb
 }
 
 .durationVolumeControl {
   position: absolute;
-  right: 25px;
+  right: 1.563em;
+  display: inline;
+}
+
+.progress-wrapper {
   display: inline;
 }
 
 .player-progress {
   cursor: pointer;
-    height: 10px;
-    padding-top: 5px;
+    height: 0.625em;
+    padding-top: 0.313em;
     position: relative;
-    top: -5px;
+    top: -0.313em;
 }
 
 .progress-played, .progress-remaining {
-  height: 2px;
+  height: 0.125em;
 }
 .progress-played {
-  #border: 1px #eeeeee solid;
   background-color: #eeeeee;
   #width: 5%;
   float: left;
 }
 .progress-remaining {
-  #border: 1px #aaaaaa solid;
   background-color: #aaaaaa;
   width: 100%;
 }
 
 .progress-slider {
     position: relative;
-    top: -10px;
+    top: -0.625em;
     color: white;
     margin-right: -1px;
     float: right;
@@ -204,27 +229,16 @@ a {
 
 .progress-slider-disc {
   background-color: white;
-  width: 12px;
-  height: 12px;
+  width: 0.750em;
+  height: 0.750em;
   display: inline;
   float: right;
   border-radius: 50%;
-  margin-top: -5px;
-}
-
-.progress-slider-disc li {
-  list-style-type: disc;
-  font-size: 30px;
-  float: right;
-  color: white;
-  padding: 0;
-  margin: 0;
-  margin-top: -36px;
-  margin-right: -26px;
+  margin-top: -0.313em;
 }
 
 .control-padding {
-  margin: 15px;
+  margin: 1em;
 }
 
 .active {
@@ -250,15 +264,15 @@ a {
 }
 input[type="range"] {
   -webkit-appearance: none;
-  height: 4px;
+  height: 0.250em;
 }
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   position: relative;
-  top: 0px;
+  top: 0;
   z-index: 1;
-  width: 11px;
-  height: 11px;
+  width: 0.688em;
+  height: 0.688em;
   cursor: pointer;
   -webkit-box-shadow: 0px 3px 2px 0px rgba(0, 0, 0, 0.6);
   -moz-box-shadow: 0px 3px 2px 0px rgba(0, 0, 0, 0.6);

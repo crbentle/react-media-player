@@ -31,7 +31,8 @@ class PlayList extends React.Component {
     }
     render() {
         return (
-            <ul className='playlist'>
+          <div className='playlist'>
+            <ul>
               {this.props.songs.map(function(song, index) {
                 const active = this.props.activeIndex === index ? true : false;
                 return (
@@ -43,6 +44,7 @@ class PlayList extends React.Component {
                 )
               }, this)}
             </ul>
+          </div>
         )
     }
 }
