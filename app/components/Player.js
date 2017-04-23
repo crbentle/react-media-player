@@ -5,6 +5,7 @@ const PlayList = require('./PlayList');
 const ControlPanel = require('./ControlPanel');
 const ProgressBar = require('./ProgressBar');
 const axios = require('axios');
+var CancelToken = axios.CancelToken;
 
 class Player extends React.Component {
   constructor(props) {
@@ -31,16 +32,39 @@ class Player extends React.Component {
     this.audioBuffer = null;
     this.gainNode = this.audioContext.createGain();
     this.gainNode.connect(this.audioContext.destination);
+
+    /*
+     * A method that can cancel a request
+     *  if a new request comes in before the previous one finished.
+     * This would happen if the previos or next buttons were clicked
+     *  faster than the requests are finishing.
+    */
+    this.cancelAxios;
   }
 
   // Create a new AudioBufferSourceNode
   initAudioSource() {
+    this.clearAudioSource();
     this.audioSource = this.audioContext.createBufferSource();
     this.audioSource.buffer = this.audioBuffer;
     // this.audioSource.connect(this.audioContext.destination);
     this.audioSource.connect(this.gainNode);
     // Bind the callback to this
-    this.audioSource.onended = this.playNextSong.bind(this);//endOfPlayback;
+    this.audioSource.onended = this.playNextSong.bind(this); //endOfPlayback;
+    this.startProgressTimer();
+  }
+
+  clearAudioSource() {
+    this.stopProgressTimer();
+
+    // Clear any existing audio source that we might be using
+    if (this.audioSource != null) {
+      this.audioSource.stop(0);
+      // this.audioSource.disconnect(this.audioContext.destination);
+      this.audioSource.disconnect(this.gainNode);
+      // Leave existing source to garbage collection
+      this.audioSource = null;
+    }
   }
 
   startProgressTimer() {
@@ -145,10 +169,7 @@ class Player extends React.Component {
     if( this.state.progress != null ) {
       var duration = this.state.progress.duration;
       var played = duration * percent;
-      this.audioSource.stop(0);
       // this.audioSource.disconnect(this.audioContext.destination);
-      this.audioSource.disconnect(this.gainNode);
-      this.audioSource = null;
       this.initAudioSource();
       this.audioSource.start(0, played);
       this.songStartTime = this.audioContext.currentTime - played;
@@ -173,26 +194,32 @@ class Player extends React.Component {
       }
     }
 
-    // Stop the progress timer while we retrieve the next song
-    this.stopProgressTimer();
+    // Stop the current song and progress timer while we retrieve
+    // the next song
+    this.clearAudioSource();
       var song = this.state.songList[index];
       this.setState({currentSongIndex: index, isPlaying: true});
-
-      // Clear any existing audio source that we might be using
-      if (this.audioSource != null) {
-          // this.audioSource.disconnect(this.audioContext.destination);
-          this.audioSource.disconnect(this.gainNode);
-          // Leave existing source to garbage collection
-          this.audioSource = null;
-      }
 
       //set the audio file's URL
       var audioURL = song.path;
 
+      /*
+       * A new song is being requested but we have not finished
+       *  a previous request.
+       * Cancel the previous request.
+       */
+      if( this.cancelAxios != null ) {
+        this.cancelAxios();
+      }
+      this.cancelTokenSource = CancelToken.source();
+
       axios({
         method: 'get',
         url: audioURL,
-        responseType: 'arraybuffer'
+        responseType: 'arraybuffer',
+        cancelToken: new CancelToken(function executor(c) {
+          this.cancelAxios = c;
+        }.bind(this))
       })
       .then(function(response) {
           //take the audio from http request and decode it in an audio buffer
@@ -208,7 +235,6 @@ class Player extends React.Component {
               // source.buffer = audioBuffer; // set the buffer to play to our audio buffer
               // source.connect(audioContext.destination); // connect the source to the output destinarion
               this.audioSource.start(0); // tell the audio buffer to play from the beginning
-              this.startProgressTimer();
 
               var bufferDuration = this.audioSource.buffer.duration;
               this.songStartTime = this.audioContext.currentTime;
@@ -223,17 +249,21 @@ class Player extends React.Component {
               if (this.audioContext.state != 'running') {
                   this.audioContext.resume();
               }
+              // Clear the cancel function because this request has finished
+              this.cancelAxios = null;
           }.bind(this));
       }.bind(this))
       .catch(function(error) {
-          this.setState({
-            isPlaying: false,
-            progress: null
-          });
+        this.cancelAxios = null;
+        this.setState({isPlaying: false, progress: null});
 
-          console.log("Error: " + error);
-          this.stopProgressTimer();
-          this.playNextSong();
+        console.log("Error: " + error);
+        if (axios.isCancel(error)) {
+          console.log('Axios request was canceled', error.message);
+        }
+
+        this.stopProgressTimer();
+        this.playNextSong();
       }.bind(this));
   }
   handleVolume(value) {
