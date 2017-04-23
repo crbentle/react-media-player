@@ -163,6 +163,8 @@ class Player extends React.Component {
   }
 
   playSong(index) {
+    // Stop the progress timer while we retrieve the next song
+    this.stopProgressTimer();
       var song = this.state.songList[index];
       this.setState({currentSongIndex: index, isPlaying: true});
 
@@ -176,7 +178,7 @@ class Player extends React.Component {
 
       //set the audio file's URL
       var audioURL = song.path;
-
+      
       axios({
         method: 'get',
         url: audioURL,
