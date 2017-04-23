@@ -40,6 +40,22 @@ class Player extends React.Component {
      *  faster than the requests are finishing.
     */
     this.cancelAxios;
+
+    // Add keyboard controls
+    window.onkeydown = function(e) {
+      var code = e.keyCode ? e.keyCode : e.which;
+      if (code === 37) { //left arrow
+        //previous
+        this.playPreviousSong();
+      } else if (code === 39) { //right arrow
+        //next
+        this.playNextSong();
+      } else if (code === 32) { //spacebar
+        //toggle
+        e.preventDefault();
+        this.togglePlayPause();
+      }
+    }.bind(this);
   }
 
   // Create a new AudioBufferSourceNode
