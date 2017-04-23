@@ -2,12 +2,14 @@ var path = require('path');
 var HtmlWebPackPlugin = require('html-webpack-plugin');
 var webpack = require('webpack');
 
+const ASSET_PATH = (process.env.NODE_ENV === 'production' ? "./" : "/");
+
 var config = {
   entry: './app/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'index_bundle.js',
-    publicPath: '/'
+    publicPath: ASSET_PATH
   },
   module: {
     rules: [
