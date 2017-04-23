@@ -163,6 +163,16 @@ class Player extends React.Component {
   }
 
   playSong(index) {
+    // Scroll to the active song
+    var playlistArray = document.getElementsByClassName("playlist");
+    if( playlistArray != null && playlistArray.length == 1 ) {
+      var playlist = playlistArray[0];
+      var liArray = playlist.querySelectorAll("ul > li");
+      if( liArray != null && liArray.length > index ) {
+        liArray[index].scrollIntoView(false);
+      }
+    }
+
     // Stop the progress timer while we retrieve the next song
     this.stopProgressTimer();
       var song = this.state.songList[index];
@@ -178,7 +188,7 @@ class Player extends React.Component {
 
       //set the audio file's URL
       var audioURL = song.path;
-      
+
       axios({
         method: 'get',
         url: audioURL,
