@@ -183,14 +183,31 @@ class Player extends React.Component {
     }
   }
 
+  /*
+   * Retruns true if a child component is currently viewable
+   *  inside the parent scrollable
+   */
+  isScrolledIntoView(parent, child) {
+    var childTop = child.getBoundingClientRect().top;
+    var childBottom = child.getBoundingClientRect().bottom;
+
+    var parentTop = parent.getBoundingClientRect().top;
+    var parentBottom = parent.getBoundingClientRect().bottom;
+
+    var isVisible = (childTop >= parentTop) && (childBottom <= parentBottom);
+    return isVisible;
+  }
+
   playSong(index) {
-    // Scroll to the active song
+    // Scroll to the active song if the song is not currently visible
     var playlistArray = document.getElementsByClassName("playlist");
     if( playlistArray != null && playlistArray.length == 1 ) {
       var playlist = playlistArray[0];
       var liArray = playlist.querySelectorAll("ul > li");
       if( liArray != null && liArray.length > index ) {
-        liArray[index].scrollIntoView(false);
+        if( !this.isScrolledIntoView( playlist, liArray[index] ) ) {
+          liArray[index].scrollIntoView(false);
+        }
       }
     }
 
