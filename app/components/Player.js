@@ -1,5 +1,4 @@
 const React = require('react');
-const PropTypes = require('prop-types');
 const songApi = require('../utils/songApi');
 const PlayList = require('./PlayList');
 const ControlPanel = require('./ControlPanel');
@@ -17,7 +16,7 @@ class Player extends React.Component {
       isPlaying: false,
       volume: 100,
       mute: false
-    }
+    };
 
     this.handleControlClick = this.handleControlClick.bind(this);
     this.handleSongClick = this.handleSongClick.bind(this);
@@ -34,15 +33,15 @@ class Player extends React.Component {
     this.gainNode.connect(this.audioContext.destination);
 
     /*
-     * A method that can cancel a request
-     *  if a new request comes in before the previous one finished.
+     * A method that can cancel a request if a new request comes in
+     *  before the previous one finished.
      * This would happen if the previos or next buttons were clicked
      *  faster than the requests are finishing.
     */
     this.cancelAxios;
 
     // Add keyboard controls
-    window.onkeydown = function(e) {
+    window.onkeydown = function (e) {
       var code = e.keyCode ? e.keyCode : e.which;
       if (code === 37) { //left arrow
         //previous
@@ -84,21 +83,19 @@ class Player extends React.Component {
   }
 
   startProgressTimer() {
-    this.progressTimerID = window.setInterval(function() {
+    this.progressTimerID = window.setInterval(function () {
       var progress = this.state.progress;
       if (progress != null) {
         progress['played'] = (this.audioContext.currentTime - this.songStartTime);
-        this.setState({
-          progress: progress
-        });
+        this.setState({progress: progress});
       }
     }.bind(this), 50);
   }
 
   stopProgressTimer() {
     if (this.progressTimerID != null) {
-        window.clearInterval(this.progressTimerID);
-        this.progressTimerID = null;
+      window.clearInterval(this.progressTimerID);
+      this.progressTimerID = null;
     }
   }
 
@@ -112,7 +109,7 @@ class Player extends React.Component {
         this.playPreviousSong();
         break;
       case 'next':
-      this.playNextSong();
+        this.playNextSong();
         break;
       default:
         //?
@@ -121,7 +118,7 @@ class Player extends React.Component {
   playCurrentSong() {
     // If the 'play' button is clicked as the first action we need to set the current song index to '0'
     var currentSongIndex = this.state.currentSongIndex;
-    if( currentSongIndex < 0 ) {
+    if (currentSongIndex < 0) {
       currentSongIndex = 0;
     }
     this.playSong(currentSongIndex);
@@ -129,7 +126,7 @@ class Player extends React.Component {
   playPreviousSong() {
     var currentSongIndex = this.state.currentSongIndex;
     currentSongIndex--;
-    if( currentSongIndex < 0 ) {
+    if (currentSongIndex < 0) {
       currentSongIndex = this.state.songList.length - 1;
     }
     this.handleSongClick(currentSongIndex);
@@ -137,7 +134,7 @@ class Player extends React.Component {
   playNextSong() {
     var currentSongIndex = this.state.currentSongIndex;
     currentSongIndex++;
-    if( currentSongIndex > (this.state.songList.length - 1) ) {
+    if (currentSongIndex > (this.state.songList.length - 1)) {
       currentSongIndex = 0;
     }
     this.handleSongClick(currentSongIndex);
@@ -150,29 +147,26 @@ class Player extends React.Component {
     }
   }
   togglePlayPause() {
-      var play = this.state.isPlaying ? false : true;
-      if (play) {
-          if (this.audioContext != null && this.audioContext.state != 'running') {
-              this.audioContext.resume();
-              this.startProgressTimer();
-          } else {
-              this.playCurrentSong();
-          }
+    var play = this.state.isPlaying ? false : true;
+    if (play) {
+      if (this.audioContext != null && this.audioContext.state != 'running') {
+        this.audioContext.resume();
+        this.startProgressTimer();
       } else {
-          if (this.audioContext != null) {
-              this.audioContext.suspend();
-              this.stopProgressTimer();
-          }
+        this.playCurrentSong();
       }
+    } else {
+      if (this.audioContext != null) {
+        this.audioContext.suspend();
+        this.stopProgressTimer();
+      }
+    }
 
-      var progress = this.state.progress;
-      if( progress != null ) {
-        progress['played'] = (this.audioContext.currentTime - this.songStartTime);
-        this.setState({
-          isPlaying: play,
-          progress: progress
-        });
-      }
+    var progress = this.state.progress;
+    if (progress != null) {
+      progress['played'] = (this.audioContext.currentTime - this.songStartTime);
+      this.setState({isPlaying: play, progress: progress});
+    }
   }
   handleProgressClick(event) {
     // var percent = Math.round((event.clientX / window.outerWidth) * 100);
@@ -182,7 +176,7 @@ class Player extends React.Component {
     var percent = offsetClick / targetWidth;
 
     // var percent = (event.clientX / window.outerWidth);
-    if( this.state.progress != null ) {
+    if (this.state.progress != null) {
       var duration = this.state.progress.duration;
       var played = duration * percent;
       // this.audioSource.disconnect(this.audioContext.destination);
@@ -190,7 +184,7 @@ class Player extends React.Component {
       this.audioSource.start(0, played);
       this.songStartTime = this.audioContext.currentTime - played;
 
-      this.setState( {
+      this.setState({
         progress: {
           played: played,
           duration: duration
@@ -217,11 +211,11 @@ class Player extends React.Component {
   playSong(index) {
     // Scroll to the active song if the song is not currently visible
     var playlistArray = document.getElementsByClassName("playlist");
-    if( playlistArray != null && playlistArray.length == 1 ) {
+    if (playlistArray != null && playlistArray.length == 1) {
       var playlist = playlistArray[0];
       var liArray = playlist.querySelectorAll("ul > li");
-      if( liArray != null && liArray.length > index ) {
-        if( !this.isScrolledIntoView( playlist, liArray[index] ) ) {
+      if (liArray != null && liArray.length > index) {
+        if (!this.isScrolledIntoView(playlist, liArray[index])) {
           liArray[index].scrollIntoView(false);
         }
       }
@@ -230,74 +224,72 @@ class Player extends React.Component {
     // Stop the current song and progress timer while we retrieve
     // the next song
     this.clearAudioSource();
-      var song = this.state.songList[index];
-      this.setState({currentSongIndex: index, isPlaying: true});
+    var song = this.state.songList[index];
+    this.setState({currentSongIndex: index, isPlaying: true});
 
-      //set the audio file's URL
-      var audioURL = song.path;
+    //set the audio file's URL
+    var audioURL = song.path;
 
-      /*
+    /*
        * A new song is being requested but we have not finished
        *  a previous request.
        * Cancel the previous request.
        */
-      if( this.cancelAxios != null ) {
-        this.cancelAxios();
-      }
-      this.cancelTokenSource = CancelToken.source();
+    if (this.cancelAxios != null) {
+      this.cancelAxios();
+    }
+    this.cancelTokenSource = CancelToken.source();
 
-      axios({
-        method: 'get',
-        url: audioURL,
-        responseType: 'arraybuffer',
-        cancelToken: new CancelToken(function executor(c) {
-          this.cancelAxios = c;
-        }.bind(this))
-      })
-      .then(function(response) {
-          //take the audio from http request and decode it in an audio buffer
-          var audioBuffer = null;
-          this.audioContext.decodeAudioData(response.data, function(audioBuffer) {
-
-              // In order to play the decoded samples contained in the audio buffer we need to wrap them in
-              // an AudioBufferSourceNode object. This object will stream the audio samples to any other
-              // AudioNode or AudioDestinationNode object.
-              this.audioBuffer = audioBuffer;
-              this.initAudioSource();
-              // audioSource = audioContext.createBufferSource();
-              // source.buffer = audioBuffer; // set the buffer to play to our audio buffer
-              // source.connect(audioContext.destination); // connect the source to the output destinarion
-              this.audioSource.start(0); // tell the audio buffer to play from the beginning
-
-              var bufferDuration = this.audioSource.buffer.duration;
-              this.songStartTime = this.audioContext.currentTime;
-
-              this.setState({
-                  progress: {
-                      played: 0,
-                      duration: bufferDuration
-                  }
-              })
-              // Check for 'running' here in case the context was previously suspended
-              if (this.audioContext.state != 'running') {
-                  this.audioContext.resume();
-              }
-              // Clear the cancel function because this request has finished
-              this.cancelAxios = null;
-          }.bind(this));
+    axios({
+      method: 'get',
+      url: audioURL,
+      responseType: 'arraybuffer',
+      cancelToken: new CancelToken(function executor(c) {
+        this.cancelAxios = c;
       }.bind(this))
-      .catch(function(error) {
-        this.cancelAxios = null;
-        this.setState({isPlaying: false, progress: null});
+    }).then(function (response) {
+      //take the audio from http request and decode it in an audio buffer
+      this.audioBuffer = null;
+      this.audioContext.decodeAudioData(response.data, function (audioBuffer) {
 
-        console.log("Error: " + error);
-        if (axios.isCancel(error)) {
-          console.log('Axios request was canceled', error.message);
+        // In order to play the decoded samples contained in the audio buffer we need to wrap them in
+        // an AudioBufferSourceNode object. This object will stream the audio samples to any other
+        // AudioNode or AudioDestinationNode object.
+        this.audioBuffer = audioBuffer;
+        this.initAudioSource();
+        // audioSource = audioContext.createBufferSource();
+        // source.buffer = audioBuffer; // set the buffer to play to our audio buffer
+        // source.connect(audioContext.destination); // connect the source to the output destinarion
+        this.audioSource.start(0); // tell the audio buffer to play from the beginning
+
+        var bufferDuration = this.audioSource.buffer.duration;
+        this.songStartTime = this.audioContext.currentTime;
+
+        this.setState({
+          progress: {
+            played: 0,
+            duration: bufferDuration
+          }
+        });
+        // Check for 'running' here in case the context was previously suspended
+        if (this.audioContext.state != 'running') {
+          this.audioContext.resume();
         }
-
-        this.stopProgressTimer();
-        this.playNextSong();
+        // Clear the cancel function because this request has finished
+        this.cancelAxios = null;
       }.bind(this));
+    }.bind(this)).catch(function (error) {
+      this.cancelAxios = null;
+      this.setState({isPlaying: false, progress: null});
+
+      console.log("Error: " + error);
+      if (axios.isCancel(error)) {
+        console.log('Axios request was canceled', error.message);
+      }
+
+      this.stopProgressTimer();
+      this.playNextSong();
+    }.bind(this));
   }
   handleVolume(value) {
     if (value < 1) {
@@ -307,25 +299,17 @@ class Player extends React.Component {
       this.setState({mute: mute});
     } else {
       this.gainNode.gain.value = (value / 100);
-        this.setState({
-          volume: value,
-          mute: false
-        });
+      this.setState({volume: value, mute: false});
     }
   }
   render() {
     return (
       <div className='player-wrapper'>
-        <ControlPanel
-          isPlaying={this.state.isPlaying}
-          progress={this.state.progress}
-          handleClick={this.handleControlClick}
-          handleVolume={this.handleVolume}
-          volume={this.state.mute ? 0 : this.state.volume}/>
-        <ProgressBar progress={this.state.progress} handleClick={this.handleProgressClick} />
-        <PlayList handleClick={this.handleSongClick} songs={this.state.songList} activeIndex={this.state.currentSongIndex} />
+        <ControlPanel isPlaying={this.state.isPlaying} progress={this.state.progress} handleClick={this.handleControlClick} handleVolume={this.handleVolume} volume={this.state.mute ? 0 : this.state.volume}/>
+        <ProgressBar progress={this.state.progress} handleClick={this.handleProgressClick}/>
+        <PlayList handleClick={this.handleSongClick} songs={this.state.songList} activeIndex={this.state.currentSongIndex}/>
       </div>
-    )
+    );
   }
 }
 
