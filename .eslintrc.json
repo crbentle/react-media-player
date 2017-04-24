@@ -1,0 +1,23 @@
+{
+  "extends": [
+        "plugin:react/recommended",
+        "eslint:recommended"
+  ],
+  "plugins": [
+    "standard",
+    "promise",
+    "react"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {
+    "semi": 2
+  },
+  "env": {
+        "node": true
+    }
+}
