@@ -55,6 +55,7 @@ class PlayList extends React.Component {
 
 PlayList.propTypes = {
   handleClick: PropTypes.func.isRequired,
+  songs: PropTypes.arrayOf(PropTypes.shape({title: PropTypes.string.isRequired})),
   activeIndex: PropTypes.number.isRequired
 };
 

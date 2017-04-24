@@ -24,6 +24,7 @@ function ProgressBar(props) {
 }
 
 ProgressBar.propTypes = {
+  progress: PropTypes.shape({played: PropTypes.number.isRequired, duration: PropTypes.number.isRequired}),
   handleClick: PropTypes.func.isRequired
 };
 
