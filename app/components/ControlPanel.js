@@ -14,7 +14,8 @@ function Control(props) {
 
 Control.propTypes = {
   icon: PropTypes.string.isRequired,
-  handleClick: PropTypes.func.isRequired
+  handleClick: PropTypes.func.isRequired,
+  shuffle: PropTypes.bool
 };
 
 function Play(props) {
@@ -64,7 +65,8 @@ ControlPanel.propTypes = {
   isPlaying: PropTypes.bool.isRequired,
   progress: PropTypes.shape({played: PropTypes.number.isRequired, duration: PropTypes.number.isRequired}),
   handleVolume: PropTypes.func.isRequired,
-  volume: PropTypes.number.isRequired
+  volume: PropTypes.number.isRequired,
+  shuffle: PropTypes.bool
 };
 
 module.exports = ControlPanel;
