@@ -5,18 +5,24 @@ const ControlPanel = require('./ControlPanel');
 const ProgressBar = require('./ProgressBar');
 const axios = require('axios');
 var CancelToken = axios.CancelToken;
+var shuffle = require('shuffle-array');
 
 class Player extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       progress: null,
-      songList: songApi.getSongList(),
       currentSongIndex: -1,
+      shuffle: false,
       isPlaying: false,
       volume: 100,
       mute: false
     };
+
+    if( !this.songList ) {
+      this.songList = songApi.getSongList();
+      this.shuffleList = shuffle( this.songList, {'copy': true});
+    }
 
     this.handleControlClick = this.handleControlClick.bind(this);
     this.handleSongClick = this.handleSongClick.bind(this);
@@ -111,6 +117,12 @@ class Player extends React.Component {
       case 'next':
         this.playNextSong();
         break;
+      case 'shuffle':
+        // index = this.shuffleList.findIndex(x => x == song );
+        this.setState({
+          shuffle: !this.state.shuffle
+        });
+        break;
       default:
         //?
     }
@@ -135,6 +147,7 @@ class Player extends React.Component {
     var currentSongIndex = this.state.currentSongIndex;
     currentSongIndex++;
     if (currentSongIndex > (this.state.songList.length - 1)) {
+
       currentSongIndex = 0;
     }
     this.handleSongClick(currentSongIndex);
@@ -224,8 +237,8 @@ class Player extends React.Component {
     // Stop the current song and progress timer while we retrieve
     // the next song
     this.clearAudioSource();
-    var song = this.state.songList[index];
-    this.setState({currentSongIndex: index, isPlaying: true});
+      var song = this.songList[index];
+      this.setState({currentSongIndex: index, isPlaying: true});
 
     //set the audio file's URL
     var audioURL = song.path;
@@ -305,7 +318,13 @@ class Player extends React.Component {
   render() {
     return (
       <div className='player-wrapper'>
-        <ControlPanel isPlaying={this.state.isPlaying} progress={this.state.progress} handleClick={this.handleControlClick} handleVolume={this.handleVolume} volume={this.state.mute ? 0 : this.state.volume}/>
+        <ControlPanel
+          isPlaying={this.state.isPlaying}
+          shuffle={this.state.shuffle}
+          progress={this.state.progress}
+          handleClick={this.handleControlClick}
+          handleVolume={this.handleVolume}
+          volume={this.state.mute ? 0 : this.state.volume}/>
         <ProgressBar progress={this.state.progress} handleClick={this.handleProgressClick}/>
         <PlayList handleClick={this.handleSongClick} songs={this.state.songList} activeIndex={this.state.currentSongIndex}/>
       </div>
