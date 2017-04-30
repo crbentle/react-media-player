@@ -51,10 +51,10 @@ class Player extends React.Component {
       var code = e.keyCode ? e.keyCode : e.which;
       if (code === 37) { //left arrow
         //previous
-        this.playPreviousSong();
+        this.playNextSong( -1 );
       } else if (code === 39) { //right arrow
         //next
-        this.playNextSong();
+        this.playNextSong( 1 );
       } else if (code === 32) { //spacebar
         //toggle
         e.preventDefault();
@@ -112,10 +112,10 @@ class Player extends React.Component {
         this.togglePlayPause();
         break;
       case 'previous':
-        this.playPreviousSong();
+        this.playNextSong( -1 );
         break;
       case 'next':
-        this.playNextSong();
+        this.playNextSong( 1 );
         break;
       case 'shuffle':
         // index = this.shuffleList.findIndex(x => x == song );
@@ -135,22 +135,32 @@ class Player extends React.Component {
     }
     this.playSong(currentSongIndex);
   }
-  playPreviousSong() {
+  playNextSong(direction) {
     var currentSongIndex = this.state.currentSongIndex;
-    currentSongIndex--;
-    if (currentSongIndex < 0) {
-      currentSongIndex = this.state.songList.length - 1;
+    var nextIndex;
+    // If we are in shuffle mode find the current song in the
+    // shuffle list and move to the next song in the shuffle list
+    if (this.state.shuffle) {
+      var currentSong = this.songList[currentSongIndex];
+      // Find the current song in the shuffle list so we never shuffle and play a duplicate
+      var currentIndex = this.shuffleList.findIndex( x => x == currentSong );
+      nextIndex = +currentIndex + +direction;
+      if (nextIndex > this.shuffleList.length - 1) {
+        nextIndex = 0;
+      } else if (nextIndex < 0) {
+        nextIndex = this.shuffleList.length - 1;
+      }
+      // Find the index on the songList that corresponds to the index in the shuffle list
+      nextIndex = this.songList.findIndex( x => x == this.shuffleList[nextIndex] );
+    } else {
+        nextIndex = currentSongIndex + direction;
+        if (nextIndex > this.songList.length - 1) {
+          nextIndex = 0;
+        } else if (nextIndex < 0) {
+          nextIndex = this.songList.length - 1;
+        }
     }
-    this.handleSongClick(currentSongIndex);
-  }
-  playNextSong() {
-    var currentSongIndex = this.state.currentSongIndex;
-    currentSongIndex++;
-    if (currentSongIndex > (this.state.songList.length - 1)) {
-
-      currentSongIndex = 0;
-    }
-    this.handleSongClick(currentSongIndex);
+    this.playSong(nextIndex);
   }
   handleSongClick(index) {
     if (index === this.state.currentSongIndex) {
@@ -326,7 +336,7 @@ class Player extends React.Component {
           handleVolume={this.handleVolume}
           volume={this.state.mute ? 0 : this.state.volume}/>
         <ProgressBar progress={this.state.progress} handleClick={this.handleProgressClick}/>
-        <PlayList handleClick={this.handleSongClick} songs={this.state.songList} activeIndex={this.state.currentSongIndex}/>
+        <PlayList handleClick={this.handleSongClick} songs={this.songList} activeIndex={this.state.currentSongIndex}/>
       </div>
     );
   }

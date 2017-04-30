@@ -5,14 +5,27 @@ const VolumeControl = require('./VolumeControl');
 
 function Control(props) {
     return (
-        <div onClick={props.handleClick} className='control'
-          style={props.shuffle ? {'color': 'red'} : {}}>
+        <div onClick={props.handleClick} className='control'>
           <Glyphicon glyph={props.icon}/>
         </div>
     );
 }
 
 Control.propTypes = {
+  icon: PropTypes.string.isRequired,
+  handleClick: PropTypes.func.isRequired
+};
+
+function Shuffle(props) {
+  var className = props.shuffle ? 'on' : 'off';
+    return (
+        <div onClick={props.handleClick} className={'control shuffle ' + className}>
+          <Glyphicon glyph={props.icon}/>
+        </div>
+    );
+}
+
+Shuffle.propTypes = {
   icon: PropTypes.string.isRequired,
   handleClick: PropTypes.func.isRequired,
   shuffle: PropTypes.bool
@@ -45,7 +58,7 @@ class ControlPanel extends React.Component {
               <Control handleClick={this.props.handleClick.bind(null, 'previous')} icon='fast-backward'/>
               <Play isPlaying={this.props.isPlaying} handleClick={this.props.handleClick} icon='play'/>
               <Control handleClick={this.props.handleClick.bind(null, 'next')} icon='fast-forward'/>
-              <Control handleClick={this.props.handleClick.bind(null, 'shuffle')} icon='random' shuffle={this.props.shuffle}/>
+              <Shuffle handleClick={this.props.handleClick.bind(null, 'shuffle')} icon='random' shuffle={this.props.shuffle}/>
               <div className='durationVolumeControl'>
                 {this.props.progress != null &&
                   <div className="duration-control">
