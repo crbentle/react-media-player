@@ -3,6 +3,7 @@ const songApi = require('../utils/songApi');
 const PlayList = require('./PlayList');
 const ControlPanel = require('./ControlPanel');
 const ProgressBar = require('./ProgressBar');
+const Visualization = require('./Visualization');
 const axios = require('axios');
 var CancelToken = axios.CancelToken;
 var shuffle = require('shuffle-array');
@@ -37,6 +38,12 @@ class Player extends React.Component {
     this.audioBuffer = null;
     this.gainNode = this.audioContext.createGain();
     this.gainNode.connect(this.audioContext.destination);
+    this.analyserNode = this.audioContext.createAnalyser();
+    this.analyserNode.fftSize = 256;
+// this.analyserNode.minDecibels = -90;
+// this.analyserNode.maxDecibels = -10;
+this.analyserNode.smoothingTimeConstant = 0.8;
+    this.analyserNode.connect(this.gainNode);
 
     /*
      * A method that can cancel a request if a new request comes in
@@ -69,9 +76,9 @@ class Player extends React.Component {
     this.audioSource = this.audioContext.createBufferSource();
     this.audioSource.buffer = this.audioBuffer;
     // this.audioSource.connect(this.audioContext.destination);
-    this.audioSource.connect(this.gainNode);
+    this.audioSource.connect(this.analyserNode);
     // Bind the callback to this
-    this.audioSource.onended = this.playNextSong.bind(this); //endOfPlayback;
+    this.audioSource.onended = this.playNextSong.bind(this, 1); //endOfPlayback;
     this.startProgressTimer();
   }
 
@@ -82,7 +89,7 @@ class Player extends React.Component {
     if (this.audioSource != null) {
       this.audioSource.stop(0);
       // this.audioSource.disconnect(this.audioContext.destination);
-      this.audioSource.disconnect(this.gainNode);
+      this.audioSource.disconnect(this.analyserNode);
       // Leave existing source to garbage collection
       this.audioSource = null;
     }
@@ -247,8 +254,8 @@ class Player extends React.Component {
     // Stop the current song and progress timer while we retrieve
     // the next song
     this.clearAudioSource();
-      var song = this.songList[index];
-      this.setState({currentSongIndex: index, isPlaying: true});
+    var song = this.songList[index];
+    this.setState({currentSongIndex: index, isPlaying: true});
 
     //set the audio file's URL
     var audioURL = song.path;
@@ -311,7 +318,7 @@ class Player extends React.Component {
       }
 
       this.stopProgressTimer();
-      this.playNextSong();
+      this.playNextSong( 1 );
     }.bind(this));
   }
   handleVolume(value) {
@@ -336,6 +343,9 @@ class Player extends React.Component {
           handleVolume={this.handleVolume}
           volume={this.state.mute ? 0 : this.state.volume}/>
         <ProgressBar progress={this.state.progress} handleClick={this.handleProgressClick}/>
+        { this.analyserNode &&
+          <Visualization analyserNode={this.analyserNode} isPlaying={this.state.isPlaying} />
+        }
         <PlayList handleClick={this.handleSongClick} songs={this.songList} activeIndex={this.state.currentSongIndex}/>
       </div>
     );
