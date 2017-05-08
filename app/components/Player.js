@@ -42,6 +42,7 @@ class Player extends React.Component {
         localStorage.setItem( 'volume', localStorageVolume );
       } else {
           // set volume from localStorage
+          localStorageVolume = localStorage.getItem('volume');
       }
     }
 
@@ -96,6 +97,7 @@ class Player extends React.Component {
     // this.audioSource.connect(this.audioContext.destination);
 
     // Only create the analyserNode after a song is started.
+    // This prevents the visualization section from displaying when
     //  some controls are used (volume, shuffle).
     if( !this.analyserNode ) {
       this.initAnalyserNode();
