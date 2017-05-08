@@ -11,14 +11,6 @@ var shuffle = require('shuffle-array');
 class Player extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      progress: null,
-      currentSongIndex: -1,
-      shuffle: false,
-      isPlaying: false,
-      volume: 100,
-      mute: false
-    };
 
     if( !this.songList ) {
       this.songList = songApi.getSongList();
@@ -30,6 +22,38 @@ class Player extends React.Component {
     this.handleProgressClick = this.handleProgressClick.bind(this);
     this.playSong = this.playSong.bind(this);
     this.handleVolume = this.handleVolume.bind(this);
+
+    this.localStorageAvailable = false;
+    // Try to create a test localStorage item to verify localStorage is available
+    try {
+      var storage = window['localStorage'],
+        x = '__storage_test__';
+      storage.setItem(x, x);
+      storage.removeItem(x);
+      this.localStorageAvailable = true;
+    } catch (e) {
+      this.localStorageAvailable = (e instanceof DOMException && e.name === 'QuotaExceededError' && storage.length !== 0);
+    }
+
+    var localStorageVolume = 100;
+    if( this.localStorageAvailable ) {
+      // No volume storage found. Set default to 100
+      if(!localStorage.getItem('volume')) {
+        localStorage.setItem( 'volume', localStorageVolume );
+      } else {
+          // set volume from localStorage
+      }
+    }
+
+    this.state = {
+      progress: null,
+      currentSongIndex: -1,
+      shuffle: false,
+      isPlaying: false,
+      volume: localStorageVolume,
+      mute: false
+    };
+
   }
   componentDidMount() {
     this.songStartTime = 0;
@@ -38,17 +62,11 @@ class Player extends React.Component {
     this.audioBuffer = null;
     this.gainNode = this.audioContext.createGain();
     this.gainNode.connect(this.audioContext.destination);
-    this.analyserNode = this.audioContext.createAnalyser();
-    this.analyserNode.fftSize = 256;
-// this.analyserNode.minDecibels = -90;
-// this.analyserNode.maxDecibels = -10;
-this.analyserNode.smoothingTimeConstant = 0.8;
-    this.analyserNode.connect(this.gainNode);
 
     /*
      * A method that can cancel a request if a new request comes in
      *  before the previous one finished.
-     * This would happen if the previos or next buttons were clicked
+     * This would happen if the previous or next buttons were clicked
      *  faster than the requests are finishing.
     */
     this.cancelAxios;
@@ -76,10 +94,26 @@ this.analyserNode.smoothingTimeConstant = 0.8;
     this.audioSource = this.audioContext.createBufferSource();
     this.audioSource.buffer = this.audioBuffer;
     // this.audioSource.connect(this.audioContext.destination);
+
+    // Only create the analyserNode after a song is started.
+    //  some controls are used (volume, shuffle).
+    if( !this.analyserNode ) {
+      this.initAnalyserNode();
+    }
     this.audioSource.connect(this.analyserNode);
     // Bind the callback to this
     this.audioSource.onended = this.playNextSong.bind(this, 1); //endOfPlayback;
     this.startProgressTimer();
+  }
+
+  // Create a new analyserNode that will handle visualization
+  initAnalyserNode() {
+    this.analyserNode = this.audioContext.createAnalyser();
+    this.analyserNode.fftSize = 256;
+// this.analyserNode.minDecibels = -90;
+// this.analyserNode.maxDecibels = -10;
+    this.analyserNode.smoothingTimeConstant = 0.8;
+    this.analyserNode.connect(this.gainNode);
   }
 
   clearAudioSource() {
@@ -322,6 +356,7 @@ this.analyserNode.smoothingTimeConstant = 0.8;
     }.bind(this));
   }
   handleVolume(value) {
+
     if (value < 1) {
       var mute = this.state.mute ? false : true;
       var gainValue = mute ? 0 : this.state.volume;
@@ -330,6 +365,11 @@ this.analyserNode.smoothingTimeConstant = 0.8;
     } else {
       this.gainNode.gain.value = (value / 100);
       this.setState({volume: value, mute: false});
+
+      // Set the localStorage volume value to preserve this volume across page loads
+      if( this.localStorageAvailable ) {
+          localStorage.setItem('volume', value);
+      }
     }
   }
   render() {
@@ -341,7 +381,7 @@ this.analyserNode.smoothingTimeConstant = 0.8;
           progress={this.state.progress}
           handleClick={this.handleControlClick}
           handleVolume={this.handleVolume}
-          volume={this.state.mute ? 0 : this.state.volume}/>
+          volume={this.state.mute ? 0 : +this.state.volume}/>
         <ProgressBar progress={this.state.progress} handleClick={this.handleProgressClick}/>
         { this.analyserNode &&
           <Visualization analyserNode={this.analyserNode} isPlaying={this.state.isPlaying} />
