@@ -159,7 +159,7 @@ class Visualization extends React.Component {
   render() {
     this.updateCanvas();
     return (
-      <section id="visualization">
+      <section id="visualization" style={{marginBottom: '.625em'}}>
         <canvas
           id="canvas"
           onClick={this.handleClick}

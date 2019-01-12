@@ -22,6 +22,7 @@ class Player extends Component {
     this.handleProgressClick = this.handleProgressClick.bind(this);
     this.playSong = this.playSong.bind(this);
     this.handleVolume = this.handleVolume.bind(this);
+    this.filterPlaylist = this.filterPlaylist.bind(this);
 
     this.localStorageAvailable = false;
     // Try to create a test localStorage item to verify localStorage is available
@@ -52,7 +53,9 @@ class Player extends Component {
       shuffle: false,
       isPlaying: false,
       volume: localStorageVolume,
-      mute: false
+      mute: false,
+      songList: this.songList,
+      shuffleList: this.shuffleList
     };
 
   }
@@ -83,9 +86,12 @@ class Player extends Component {
         //next
         this.playNextSong( 1 );
       } else if (code === 32) { //spacebar
-        //toggle
-        e.preventDefault();
-        this.togglePlayPause();
+          // Don't toggle play if 'search' is active
+          if ( 'txtSearch' !== document.activeElement.id ) {
+            //toggle
+            e.preventDefault();
+            this.togglePlayPause();
+        }
       }
     }.bind(this);
   }
@@ -185,23 +191,23 @@ class Player extends Component {
     // If we are in shuffle mode find the current song in the
     // shuffle list and move to the next song in the shuffle list
     if (this.state.shuffle) {
-      var currentSong = this.songList[currentSongIndex];
+      var currentSong = this.state.songList[currentSongIndex];
       // Find the current song in the shuffle list so we never shuffle and play a duplicate
-      var currentIndex = this.shuffleList.findIndex( x => x == currentSong );
+      var currentIndex = this.state.shuffleList.findIndex( x => x === currentSong );
       nextIndex = +currentIndex + +direction;
-      if (nextIndex > this.shuffleList.length - 1) {
+      if (nextIndex > this.state.shuffleList.length - 1) {
         nextIndex = 0;
       } else if (nextIndex < 0) {
-        nextIndex = this.shuffleList.length - 1;
+        nextIndex = this.state.shuffleList.length - 1;
       }
       // Find the index on the songList that corresponds to the index in the shuffle list
-      nextIndex = this.songList.findIndex( x => x == this.shuffleList[nextIndex] );
+      nextIndex = this.state.songList.findIndex( x => x === this.state.shuffleList[nextIndex] );
     } else {
         nextIndex = currentSongIndex + direction;
-        if (nextIndex > this.songList.length - 1) {
+        if (nextIndex > this.state.songList.length - 1) {
           nextIndex = 0;
         } else if (nextIndex < 0) {
-          nextIndex = this.songList.length - 1;
+          nextIndex = this.state.songList.length - 1;
         }
     }
     this.playSong(nextIndex);
@@ -291,7 +297,7 @@ class Player extends Component {
     // Stop the current song and progress timer while we retrieve
     // the next song
     this.clearAudioSource();
-    var song = this.songList[index];
+    var song = this.state.songList[index];
     this.setState({currentSongIndex: index, isPlaying: true});
 
     //set the audio file's URL
@@ -355,7 +361,7 @@ class Player extends Component {
       }
 
       this.stopProgressTimer();
-      this.playNextSong( 1 );
+      //this.playNextSong( 1 );
     }.bind(this));
   }
   handleVolume(value) {
@@ -375,21 +381,17 @@ class Player extends Component {
       }
     }
   }
+
+  filterPlaylist(event) {
+      event.preventDefault();
+      let searchTerm = event.target.value.toUpperCase();
+      this.setState({
+          songList: this.songList.filter( song => song.title.toUpperCase().indexOf( searchTerm ) >= 0),
+          shuffleList: this.shuffleList.filter( song => song.title.toUpperCase().indexOf( searchTerm ) >= 0)
+      })
+  }
+
   render() {
-      /*
-      <ControlPanel
-        isPlaying={this.state.isPlaying}
-        shuffle={this.state.shuffle}
-        progress={this.state.progress}
-        handleClick={this.handleControlClick}
-        handleVolume={this.handleVolume}
-        volume={this.state.mute ? 0 : +this.state.volume}/>
-      <ProgressBar progress={this.state.progress} handleClick={this.handleProgressClick}/>
-      { this.analyserNode &&
-        <Visualization analyserNode={this.analyserNode} isPlaying={this.state.isPlaying} />
-      }
-      <PlayList handleClick={this.handleSongClick} songs={this.songList} activeIndex={this.state.currentSongIndex}/>
-      */
     return (
       <div className='player-wrapper'>
         <ControlPanel
@@ -403,7 +405,18 @@ class Player extends Component {
         { this.analyserNode &&
           <Visualization analyserNode={this.analyserNode} isPlaying={this.state.isPlaying} />
         }
-        <PlayList handleClick={this.handleSongClick} songs={this.songList} activeIndex={this.state.currentSongIndex}/>
+        <form onSubmit={e => {e.preventDefault(); this.playSong(0); document.activeElement.blur();}}>
+            <div className="input-group" style={{width: '400px', margin: '0 auto'}} >
+                <input onChange={this.filterPlaylist} type="text" className="form-control" placeholder="Search" id="txtSearch" name="searchTerm"
+                    autoComplete="off"/>
+                <div className="input-group-btn">
+                    <button className="btn btn-primary disabled" style={{cursor: 'default', opacity: '1'}}>
+                        <span className="glyphicon glyphicon-search"></span>
+                    </button>
+                </div>
+            </div>
+        </form>
+        <PlayList handleClick={this.handleSongClick} songs={this.state.songList} activeIndex={this.state.currentSongIndex}/>
       </div>
     );
   }
