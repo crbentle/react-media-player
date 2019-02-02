@@ -63,6 +63,7 @@ class Player extends React.Component {
     this.audioBuffer = null;
     this.gainNode = this.audioContext.createGain();
     this.gainNode.connect(this.audioContext.destination);
+    this.handleVolume(this.state.volume);
 
     /*
      * A method that can cancel a request if a new request comes in
